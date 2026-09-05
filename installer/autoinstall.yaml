@@ -1,0 +1,30 @@
+# Ubuntu Subiquity autoinstall config (STARTER / placeholder).
+#
+# live-build (build.sh) controls what software is IN the image, but the on-disk
+# layout — including the btrfs root that snapshots/rollback depend on — is decided
+# by the INSTALLER. This file is where you pin that down.
+#
+# Warden already ships a working subiquity + btrfs autoinstall under warden/iso/.
+# Since you're reusing Warden as-is, start from that file rather than this stub:
+#   /opt/warden/iso/   (in the built image)  or  ~/warden/iso/ (your clone)
+#
+# TODO: merge Warden's iso/ autoinstall with the package set below, then validate
+#       on a real machine or VM (autoinstall can't be fully tested from a chroot).
+
+version: 1
+autoinstall:
+  version: 1
+  # --- btrfs root so Snapper snapshots/rollback work ---
+  storage:
+    layout:
+      name: direct
+      # TODO: switch to a btrfs layout with @ and @home subvolumes.
+      # See warden/iso/ for a known-good btrfs example.
+  identity:
+    hostname: gamedevos
+    # username/password set interactively or here (do NOT commit real secrets)
+  packages:
+    - fish
+  late-commands:
+    # First real login runs the first-boot wizard (already seeded via /etc/skel).
+    - echo "GameDevOS installed — first boot will run setup wizard"

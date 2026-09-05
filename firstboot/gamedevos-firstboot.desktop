@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=GameDevOS First-Boot Setup
+Comment=One-time setup wizard
+Exec=xfce4-terminal --title="GameDevOS Setup" --command="/opt/gamedevos/firstboot/firstboot-wizard.sh"
+Terminal=false
+X-GNOME-Autostart-enabled=true

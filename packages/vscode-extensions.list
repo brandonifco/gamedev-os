@@ -1,0 +1,7 @@
+# VSCode extensions installed per-user at first boot (extensions are per-user).
+# C# Dev Kit is proprietary but free for individual use.
+
+ms-dotnettools.csdevkit
+ms-dotnettools.csharp
+ms-dotnettools.vscode-dotnet-runtime
+geequlim.godot-tools

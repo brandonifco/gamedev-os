@@ -1,0 +1,52 @@
+# APT packages installed into the image (hook 0300).
+# One per line; blank lines and # comments ignored.
+# XFCE desktop + display manager come from task-xfce-desktop (see build.sh).
+
+# --- Networking ---
+network-manager
+
+# --- Core dev toolchain (.NET/C#) ---
+git
+git-lfs
+build-essential
+code                       # VSCode, from Microsoft repo added in hook 0200
+
+# --- AI-agent sandbox layer (Warden runs on these) ---
+podman
+slirp4netns
+fuse-overlayfs
+uidmap
+ansible
+gh                         # GitHub CLI
+
+# --- Flatpak app backbone (Snap is removed) ---
+flatpak
+xdg-desktop-portal-gtk
+# gnome-software-plugin-flatpak   # intentionally OFF — you chose terminal-only app mgmt
+
+# --- Shell polish ---
+fish
+zsh
+
+# --- Developer fonts ---
+fonts-firacode
+fonts-jetbrains-mono
+
+# --- Firewall + automatic security updates ---
+ufw
+unattended-upgrades
+
+# --- Snapshots / rollback ---
+snapper
+btrfs-progs
+
+# --- Barebones utilities (deliberately minimal) ---
+curl
+wget
+unzip
+openssh-client
+htop
+nano
+vim
+gnupg
+ca-certificates

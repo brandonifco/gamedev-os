@@ -1,0 +1,14 @@
+# Flathub app IDs, installed at FIRST BOOT (not build time — flatpak installs
+# need a running system). See firstboot/firstboot-wizard.sh.
+# One per line; blank lines and # comments ignored.
+
+org.blender.Blender
+org.kde.krita
+com.github.PintaProject.Pinta
+com.orama_interactive.Pixelorama
+org.audacityteam.Audacity
+org.mapeditor.Tiled
+org.chromium.Chromium
+
+# Optional — offered as a toggle in the first-boot wizard, not installed by default:
+# com.jetbrains.Rider
