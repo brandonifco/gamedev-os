@@ -1,35 +1,49 @@
-# Quick-start alternative: build with Cubic
+# Building the ISO with Cubic (primary path)
 
-`build.sh` uses live-build (fully scripted, reproducible). If you'd rather
-click through your first ISO to learn what goes in, **Cubic** is the easy path.
+Cubic remasters an official Ubuntu-family ISO, so the result **keeps Ubuntu's
+installer and boot machinery** — you get a real, installable OS (with btrfs
+support) quickly and reliably. This is the recommended way to build your first
+image.
 
-## Steps
+## 1. Install Cubic
+`build/build.sh` does this for you:
+```bash
+./build/build.sh
+```
+(or manually: `sudo add-apt-repository ppa:cubic-wizard/release && sudo apt install cubic`)
 
-1. Install Cubic on an Ubuntu machine:
+## 2. Get the base ISO
+Download **Xubuntu 24.04 LTS** — it's already XFCE, matching your desktop choice,
+and is leaner than Ubuntu Desktop:
+- https://xubuntu.org/download/
+
+## 3. Provision inside Cubic
+1. Launch Cubic, select the Xubuntu ISO, and step forward until Cubic drops you
+   into a **terminal inside the image** (a chroot).
+2. Get this repo into the chroot (Cubic's "copy file" feature, or scp/mount it),
+   e.g. to `/root/gamedev-os`.
+3. Run the provisioner:
    ```bash
-   sudo apt-add-repository ppa:cubic-wizard/release
-   sudo apt update && sudo apt install cubic
+   bash /root/gamedev-os/build/cubic-provision.sh
    ```
-2. Download the **Ubuntu 24.04 LTS Desktop** ISO as your starting point.
-3. Launch Cubic, point it at that ISO, and it drops you into a terminal
-   **inside the image** (a chroot).
-4. In that terminal, run the same logic our hooks do — in order. The quickest
-   way is to copy this repo in and run the hooks:
-   ```bash
-   # from the Cubic chroot terminal:
-   export BUILD_ROOT=/opt/distro-build
-   mkdir -p $BUILD_ROOT && cp -r /path/to/gamedev-os/{config,packages} $BUILD_ROOT/
-   for h in 0100 0200 0300 0500 0600 0700 0800; do
-     bash /path/to/gamedev-os/hooks/${h}-*.sh
-   done
-   ```
-5. Copy the first-boot pieces into place (see `build.sh` for the exact paths):
-   `/opt/gamedevos/firstboot/`, `/etc/skel/.config/autostart/`.
-6. Continue the Cubic wizard: pick the kernel, trim packages if you like,
-   and let it generate the ISO.
+   This runs every build hook (remove Snap, add repos, install apt packages,
+   .NET + Godot, NVIDIA/Vulkan, shell + mise) and seeds the first-boot wizard.
+   Warden is included only if `INCLUDE_WARDEN="true"` in `config/distro.conf`.
+4. Type `exit` to leave the chroot.
 
-## Which to use?
+## 4. Finish the wizard
+Continue Cubic: pick the kernel, optionally trim packages Cubic lists, and let it
+generate the ISO.
 
-- **Cubic** — great for your *first* bootable ISO and for poking around.
-- **live-build (`build.sh`)** — the real, rebuild-with-one-command path once
-  you know what you want. This is what makes it a *distro* rather than a one-off.
+## 5. Test it
+Boot the ISO in a VM (GNOME Boxes, virt-manager, or VirtualBox) and install it.
+**Choose a btrfs root** during install so Snapper snapshots/rollback work.
+
+---
+
+## When to use the other paths instead
+- **`build-livebuild.sh`** — a from-scratch, fully reproducible build. Live-only
+  (no installer), finicky on Ubuntu. For advanced/experimental use.
+- **`installer/` (Ubuntu autoinstall)** — the reproducible path to prefer if you
+  go public: no custom live ISO, Ubuntu's own installer converges from a recipe.
+  Reuses Warden's `iso/` work.

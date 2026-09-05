@@ -22,13 +22,13 @@ development**, with a built-in **isolated sandbox layer for AI coding agents**
 | Desktop | XFCE (+ LightDM) |
 | Packaging | Snap **removed**; Flatpak + Flathub |
 | Snapshots | btrfs + Snapper (rollback) |
-| GPU | NVIDIA proprietary driver + Vulkan |
+| GPU | NVIDIA driver 580 (`-open` modules) + Vulkan |
 | Security | ufw firewall + unattended-upgrades |
 
 ### Coding core (.NET / C#)
 | Piece | Choice |
 |---|---|
-| SDK | .NET 10 (LTS) |
+| SDK | .NET 10 (LTS) — `dotnet-sdk-10.0`, native in Ubuntu 24.04 repos |
 | Editor | VSCode + **C# Dev Kit** + Godot Tools extension |
 | Alt IDE | JetBrains Rider — optional (first-boot toggle) |
 | Versions | mise (per-project toolchain pinning) |
@@ -37,7 +37,7 @@ development**, with a built-in **isolated sandbox layer for AI coding agents**
 ### Game engine
 | Piece | Choice |
 |---|---|
-| Engine | **Godot — .NET/C# ("mono") build** + export templates |
+| Engine | **Godot 4.7.2 — .NET/C# ("mono") build** + export templates |
 
 ### AI-agent sandbox layer
 | Piece | Choice |
@@ -59,6 +59,17 @@ management (no GUI store).
 
 ### Barebones utilities
 curl/wget, unzip, openssh-client, htop, nano/vim, gnupg, ca-certificates.
+
+## Build & install path
+- **Primary: Cubic** (`build/build.sh` + `build/cubic-provision.sh`) — remaster
+  the official **Xubuntu 24.04** ISO. Keeps Ubuntu's installer (so btrfs +
+  snapshots work) and reliable boot. Fastest route to a real, installable OS.
+- **Advanced: live-build** (`build/build-livebuild.sh`) — from-scratch,
+  reproducible, but live-only (no installer). For experimentation.
+- **Public later: Ubuntu autoinstall** (`installer/`) — the reproducible path to
+  prefer if distributing; reuses Warden's `iso/` work.
+- All three run the **same hooks + package lists** — the software recipe is
+  builder-agnostic, so switching builders costs nothing already invested.
 
 ## Known caveats (honest status)
 - **Warden is an early prototype** — so it is **isolated and opt-in**

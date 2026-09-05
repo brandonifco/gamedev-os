@@ -17,11 +17,9 @@ cat > /etc/apt/sources.list.d/vscode.list <<'EOF'
 deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main
 EOF
 
-# Microsoft prod feed for .NET (pinned channels). Ubuntu 24.04 also ships .NET
-# in its own repos; this feed guarantees the exact channel in distro.conf.
-wget -q "https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb" -O /tmp/ms-prod.deb
-dpkg -i /tmp/ms-prod.deb || true
-rm -f /tmp/ms-prod.deb
+# NOTE: .NET is NOT pulled from a Microsoft feed. As of Dec 2025, Canonical ships
+# dotnet-sdk-10.0 natively in the Ubuntu 24.04 repos, and mixing the Microsoft
+# feed with Ubuntu's is a known source of dependency conflicts. We use Ubuntu's.
 
 apt-get update
 

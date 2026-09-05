@@ -17,9 +17,11 @@ packages/              # apt + flatpak + vscode-extension lists
 hooks/                 # ordered build-time chroot scripts (0100..0700)
 components/warden/     # isolated, opt-in AI-sandbox layer (WIP) — off by default
 firstboot/             # one-time setup wizard (runs on first login)
-build/build.sh         # build the ISO with live-build
-build/CUBIC.md         # easier GUI alternative for your first ISO
-installer/             # subiquity autoinstall (btrfs root) — reuse warden/iso/
+build/build.sh         # PRIMARY: prepare a Cubic-based ISO build
+build/cubic-provision.sh # runs the hooks inside Cubic's chroot
+build/CUBIC.md         # step-by-step Cubic walkthrough
+build/build-livebuild.sh # ADVANCED: from-scratch live-build (live-only, reproducible)
+installer/             # Ubuntu autoinstall (btrfs root) — reuse warden/iso/
 docs/SPEC.md           # the agreed specification
 ```
 
@@ -36,14 +38,17 @@ Warden is still WIP, so it's kept in [`components/warden/`](components/warden/) 
 To include it, set `INCLUDE_WARDEN="true"` in `config/distro.conf` and rebuild.
 Podman (generic containers) stays in the base either way.
 
-## Build it
-On an Ubuntu 24.04 build host:
+## Build it (Cubic — recommended)
+On an Ubuntu 24.04 machine (this one qualifies), Cubic remasters the official
+Xubuntu ISO so you keep Ubuntu's installer and get a real, installable OS:
 ```bash
-sudo apt install live-build debootstrap
-./build/build.sh
+./build/build.sh          # installs Cubic, prints exact steps
 ```
-The ISO lands in `.build/`. First time? Read [build/CUBIC.md](build/CUBIC.md) for
-the click-through approach instead.
+Then follow [build/CUBIC.md](build/CUBIC.md): download the Xubuntu 24.04 ISO,
+open it in Cubic, and run `build/cubic-provision.sh` inside its chroot.
+
+*Advanced:* `build/build-livebuild.sh` builds from scratch (live-only, no
+installer) — for reproducible/public builds, see [docs/SPEC.md](docs/SPEC.md).
 
 ## Daily use (once installed, only if Warden was enabled)
 ```bash

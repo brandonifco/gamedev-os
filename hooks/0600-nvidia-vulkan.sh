@@ -9,10 +9,19 @@ echo "[0600] installing Vulkan + NVIDIA driver"
 apt-get install -y mesa-vulkan-drivers vulkan-tools libvulkan1
 
 # `ubuntu-drivers` autodetection needs real hardware, which the build chroot lacks,
-# so we install a specific branch here. On non-NVIDIA hardware this is inert; the
-# first-boot wizard can re-run `ubuntu-drivers install` to pick the right one.
-if ! apt-get install -y "nvidia-driver-${NVIDIA_BRANCH}"; then
-  echo "[0600] WARN: nvidia-driver-${NVIDIA_BRANCH} unavailable at build time;"
-  echo "        run 'sudo ubuntu-drivers install' on first boot instead."
+# so we install a branch here as a baseline. The first-boot wizard re-runs
+# `ubuntu-drivers install` to pick the exact right driver for the actual GPU.
+#
+# Modern NVIDIA cards (RTX 20-series onward) prefer the "-open" kernel modules,
+# and RTX 50-series REQUIRE them. Older pre-Turing cards need the non-open build.
+if [ "${NVIDIA_OPEN:-true}" = "true" ]; then
+  CANDIDATES=("nvidia-driver-${NVIDIA_BRANCH}-open" "nvidia-driver-${NVIDIA_BRANCH}")
+else
+  CANDIDATES=("nvidia-driver-${NVIDIA_BRANCH}" "nvidia-driver-${NVIDIA_BRANCH}-open")
 fi
+installed=false
+for pkg in "${CANDIDATES[@]}"; do
+  if apt-get install -y "$pkg"; then installed=true; echo "[0600] installed $pkg"; break; fi
+done
+$installed || echo "[0600] WARN: no NVIDIA driver installed at build time; first boot will autodetect."
 echo "[0600] graphics stack installed"
