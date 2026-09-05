@@ -15,10 +15,15 @@ whiptail --title "GameDevOS — first-boot setup" --msgbox \
   "Welcome! This one-time wizard finishes your setup:\n\n • installs your creative apps (Blender, Krita, etc.)\n • adds VSCode C# + Godot extensions\n • optional extras below\n\nPress OK to continue." 16 64
 
 # --- Optional toggles -------------------------------------------------------
+# Warden is only offered if the opt-in component was actually built in.
+WARDEN_OPT=()
+if [ -d /opt/warden ]; then
+  WARDEN_OPT=( "warden" "Converge Warden AI-sandbox layer (WIP, optional)" OFF )
+fi
 CHOICES=$(whiptail --title "Optional extras" --checklist \
   "Space to toggle, Enter to confirm:" 15 68 4 \
   "rider"  "JetBrains Rider IDE (free non-commercial)" OFF \
-  "warden" "Converge Warden AI-sandbox layer now"       ON \
+  "${WARDEN_OPT[@]}" \
   "nvidia" "Re-run NVIDIA driver autodetect for this GPU" ON \
   3>&1 1>&2 2>&3) || CHOICES=""
 

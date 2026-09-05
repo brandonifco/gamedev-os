@@ -42,9 +42,13 @@ development**, with a built-in **isolated sandbox layer for AI coding agents**
 ### AI-agent sandbox layer
 | Piece | Choice |
 |---|---|
-| Engine | rootless Podman |
-| System | **Warden**, reused as-is (`warden new/enter/rm`) |
+| Engine | rootless Podman *(in base — generic containers)* |
+| System | **Warden** — **isolated, opt-in** (`INCLUDE_WARDEN`), reused as-is |
 | Tooling | GitHub CLI (`gh`) |
+
+> Warden is still WIP, so it is kept out of the default build in
+> [`components/warden/`](../components/warden/) and only built in when
+> `INCLUDE_WARDEN="true"`. The base distro is fully functional without it.
 
 ### Creative & asset tools (Flatpak)
 Blender · Krita · Pinta · Pixelorama · Audacity · Tiled
@@ -57,8 +61,9 @@ management (no GUI store).
 curl/wget, unzip, openssh-client, htop, nano/vim, gnupg, ca-certificates.
 
 ## Known caveats (honest status)
-- **Warden is an early prototype** — reusing "as-is" inherits its unfinished
-  parts. It provides the sandbox workflow but some layers are aspirational.
+- **Warden is an early prototype** — so it is **isolated and opt-in**
+  (`INCLUDE_WARDEN`, see `components/warden/`) and never blocks a base build.
+  Enable it only when you want the sandbox workflow; its layers are still WIP.
 - **btrfs root** must be set by the installer, not the image builder — see
   `installer/autoinstall.yaml` and reuse `warden/iso/`.
 - **Godot C#** requires the *mono* build (handled) — the plain build can't run C#.

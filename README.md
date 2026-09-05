@@ -12,9 +12,10 @@ manifest and honest caveats.
 
 ## Repo layout
 ```
-config/distro.conf     # single source of truth (name, versions, base)
+config/distro.conf     # single source of truth (name, versions, base, toggles)
 packages/              # apt + flatpak + vscode-extension lists
-hooks/                 # ordered build-time chroot scripts (0100..0800)
+hooks/                 # ordered build-time chroot scripts (0100..0700)
+components/warden/     # isolated, opt-in AI-sandbox layer (WIP) — off by default
 firstboot/             # one-time setup wizard (runs on first login)
 build/build.sh         # build the ISO with live-build
 build/CUBIC.md         # easier GUI alternative for your first ISO
@@ -24,10 +25,16 @@ docs/SPEC.md           # the agreed specification
 
 ## What runs when
 - **Build time (hooks):** remove Snap, add MS/Flathub repos, install apt packages,
-  .NET SDK + Godot, NVIDIA/Vulkan, shell + mise, stage Warden.
+  .NET SDK + Godot, NVIDIA/Vulkan, shell + mise.
 - **First boot (wizard):** install Flatpak apps, VSCode extensions, optional Rider,
-  NVIDIA autodetect, converge Warden. *(These need a running system, so they can't
-  happen in the build chroot.)*
+  NVIDIA autodetect. *(These need a running system, so they can't happen in the
+  build chroot.)*
+
+## Warden (AI-agent sandbox) is isolated & opt-in
+Warden is still WIP, so it's kept in [`components/warden/`](components/warden/) and
+**left out of the default build**. The base distro builds and runs without it.
+To include it, set `INCLUDE_WARDEN="true"` in `config/distro.conf` and rebuild.
+Podman (generic containers) stays in the base either way.
 
 ## Build it
 On an Ubuntu 24.04 build host:
@@ -38,7 +45,7 @@ sudo apt install live-build debootstrap
 The ISO lands in `.build/`. First time? Read [build/CUBIC.md](build/CUBIC.md) for
 the click-through approach instead.
 
-## Daily use (once installed)
+## Daily use (once installed, only if Warden was enabled)
 ```bash
 # open an isolated sandbox for an AI agent to work in
 warden new myproject --repo <path-or-git-url>

@@ -11,12 +11,13 @@ git-lfs
 build-essential
 code                       # VSCode, from Microsoft repo added in hook 0200
 
-# --- AI-agent sandbox layer (Warden runs on these) ---
+# --- Container runtime (rootless, generic) ---
+# Warden builds on this when enabled, but Podman is useful on its own.
+# Warden-specific deps (ansible) live in components/warden/, not here.
 podman
 slirp4netns
 fuse-overlayfs
 uidmap
-ansible
 gh                         # GitHub CLI
 
 # --- Flatpak app backbone (Snap is removed) ---

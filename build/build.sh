@@ -50,6 +50,16 @@ for h in "$HERE"/hooks/*.sh; do
   chmod +x "$dest"
 done
 
+# Warden is an isolated, opt-in component (WIP). Only injected when explicitly
+# enabled in distro.conf; the base build never depends on it.
+if [ "${INCLUDE_WARDEN:-false}" = "true" ]; then
+  echo ">> INCLUDE_WARDEN=true — injecting Warden component as hook 0800"
+  cp "$HERE/components/warden/install-warden.sh" config/hooks/live/0800-warden.hook.chroot
+  chmod +x config/hooks/live/0800-warden.hook.chroot
+else
+  echo ">> Warden disabled (INCLUDE_WARDEN=false) — base build only"
+fi
+
 echo ">> desktop metapackage"
 mkdir -p config/package-lists
 # task-xfce-desktop pulls XFCE + LightDM. Add live tooling to reach a bootable live session.
