@@ -20,7 +20,7 @@ development**, with a built-in **isolated sandbox layer for AI coding agents**
 |---|---|
 | Base | Ubuntu 24.04 LTS (noble), minimal |
 | Desktop | XFCE (+ LightDM) |
-| Packaging | Snap **removed**; Flatpak + Flathub |
+| Packaging | Snap **removed at first boot**; Flatpak + Flathub |
 | Snapshots | btrfs + Snapper (rollback) |
 | GPU | NVIDIA driver 580 (`-open` modules) + Vulkan |
 | Security | ufw firewall + unattended-upgrades |
@@ -81,6 +81,11 @@ curl/wget, unzip, openssh-client, htop, nano/vim, gnupg, ca-certificates.
 - **Aseprite** was dropped for licensing reasons; **Pixelorama** replaces it.
 - Anything needing a running system (Flatpak apps, VSCode extensions, driver
   autodetect, Warden converge) happens in the **first-boot wizard**, not the build.
+- **Snap removal is deferred to first boot**: the Xubuntu base's installer is
+  itself a snap (`ubuntu-desktop-bootstrap`), so stripping Snap at build time
+  would break the ISO's ability to install. The installed system ends snap-free.
+- **On Cubic's "remove snap packages" screen, remove nothing** (or only
+  Firefox/Thunderbird) — never `snapd` or `ubuntu-desktop-bootstrap`.
 
 ## Path to a "real" distro (later)
 If this goes from personal → shareable, add: a signed update pipeline,

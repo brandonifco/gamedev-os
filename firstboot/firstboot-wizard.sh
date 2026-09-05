@@ -12,7 +12,28 @@ FLATPAK_LIST="$BUILD_ROOT/packages/flatpak.list"
 VSCODE_LIST="$BUILD_ROOT/packages/vscode-extensions.list"
 
 whiptail --title "GameDevOS — first-boot setup" --msgbox \
-  "Welcome! This one-time wizard finishes your setup:\n\n • installs your creative apps (Blender, Krita, etc.)\n • adds VSCode C# + Godot extensions\n • optional extras below\n\nPress OK to continue." 16 64
+  "Welcome! This one-time wizard finishes your setup:\n\n • removes Snap (the base needs it only to install)\n • installs your creative apps (Blender, Krita, etc.)\n • adds VSCode C# + Godot extensions\n • optional extras below\n\nPress OK to continue." 17 64
+
+# --- Strip Snap from the INSTALLED system -----------------------------------
+# The Xubuntu base uses a snap-based installer (ubuntu-desktop-bootstrap), so
+# Snap must survive in the live ISO for it to install itself. We remove Snap
+# here — on the installed machine — so the end result is snap-free.
+if command -v snap >/dev/null 2>&1; then
+  whiptail --title "Removing Snap" --infobox \
+    "Removing Snap and its apps (incl. the Firefox snap).\nChromium (Flatpak) is installed below as your browser.\nThis takes a minute..." 9 62
+  # Remove installed snaps in reverse order (leaf apps before bases).
+  for s in $(sudo snap list 2>/dev/null | awk 'NR>1{print $1}' | tac); do
+    sudo snap remove --purge "$s" 2>/dev/null || true
+  done
+  sudo systemctl disable --now snapd.socket snapd.service snapd.seeded.service 2>/dev/null || true
+  sudo apt-get purge -y snapd 2>/dev/null || true
+  sudo apt-get autoremove -y --purge 2>/dev/null || true
+  rm -rf "$HOME/snap" 2>/dev/null || true
+  sudo rm -rf /var/cache/snapd /root/snap /snap 2>/dev/null || true
+  # Pin snapd so nothing pulls it back in.
+  printf 'Package: snapd\nPin: release a=*\nPin-Priority: -10\n' \
+    | sudo tee /etc/apt/preferences.d/no-snapd >/dev/null
+fi
 
 # --- Optional toggles -------------------------------------------------------
 # Warden is only offered if the opt-in component was actually built in.

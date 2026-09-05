@@ -14,7 +14,7 @@ manifest and honest caveats.
 ```
 config/distro.conf     # single source of truth (name, versions, base, toggles)
 packages/              # apt + flatpak + vscode-extension lists
-hooks/                 # ordered build-time chroot scripts (0100..0700)
+hooks/                 # ordered build-time chroot scripts (0200..0700)
 components/warden/     # isolated, opt-in AI-sandbox layer (WIP) — off by default
 firstboot/             # one-time setup wizard (runs on first login)
 build/build.sh         # PRIMARY: prepare a Cubic-based ISO build
@@ -26,11 +26,17 @@ docs/SPEC.md           # the agreed specification
 ```
 
 ## What runs when
-- **Build time (hooks):** remove Snap, add MS/Flathub repos, install apt packages,
-  .NET SDK + Godot, NVIDIA/Vulkan, shell + mise.
-- **First boot (wizard):** install Flatpak apps, VSCode extensions, optional Rider,
-  NVIDIA autodetect. *(These need a running system, so they can't happen in the
-  build chroot.)*
+- **Build time (hooks):** add MS/Flathub repos, install apt packages, .NET SDK +
+  Godot, NVIDIA/Vulkan, shell + mise.
+- **First boot (wizard):** **remove Snap**, install Flatpak apps, VSCode
+  extensions, optional Rider, NVIDIA autodetect. *(These need a running system,
+  so they can't happen in the build chroot.)*
+
+## Why Snap is removed at first boot, not build time
+The Xubuntu 24.04 base uses a **snap-based installer** (`ubuntu-desktop-bootstrap`).
+If we stripped Snap while building the image, the ISO could no longer install
+itself. So Snap stays alive in the live/installer ISO and is removed on the
+**installed** system's first boot — the end result is snap-free either way.
 
 ## Warden (AI-agent sandbox) is isolated & opt-in
 Warden is still WIP, so it's kept in [`components/warden/`](components/warden/) and
