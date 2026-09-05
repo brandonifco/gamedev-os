@@ -4,6 +4,12 @@
 # per-user VSCode extensions, optional Rider, language profiles, and Warden.
 set -uo pipefail
 
+# Never run in the live/installer session — only on the INSTALLED system.
+# In Ubuntu's live session the read-only ISO squashfs is mounted at /rofs.
+if [ -d /rofs ] || grep -qsE 'boot=casper|boot=live' /proc/cmdline; then
+  exit 0
+fi
+
 STAMP="$HOME/.config/gamedevos-firstboot-done"
 [ -f "$STAMP" ] && exit 0
 
@@ -49,6 +55,8 @@ CHOICES=$(whiptail --title "Optional extras" --checklist \
   3>&1 1>&2 2>&3) || CHOICES=""
 
 # --- Flatpak apps -----------------------------------------------------------
+# Ensure the Flathub remote exists (belt-and-suspenders with hook 0300).
+sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
 if [ -f "$FLATPAK_LIST" ]; then
   mapfile -t APPS < <(grep -vE '^\s*(#|$)' "$FLATPAK_LIST")
   for app in "${APPS[@]}"; do

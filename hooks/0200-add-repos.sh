@@ -23,7 +23,7 @@ EOF
 
 apt-get update
 
-# Flathub (flatpak itself is installed via apt-base.list in hook 0300, but the
-# remote must exist before first-boot app installs).
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
+# NOTE: the Flathub remote is added in hook 0300 (AFTER the flatpak package is
+# installed) and again in the first-boot wizard — NOT here, because flatpak
+# isn't installed yet at this point in the build.
 echo "[0200] repositories ready"

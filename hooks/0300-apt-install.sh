@@ -14,4 +14,8 @@ apt-get install -y "${PKGS[@]}"
 git lfs install --system || true
 systemctl enable ufw || true
 systemctl enable unattended-upgrades || true
+
+# Flatpak is installed now — add the Flathub remote system-wide so the image
+# ships with it configured (first-boot wizard also ensures this).
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
 echo "[0300] apt install complete"
