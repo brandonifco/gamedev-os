@@ -54,7 +54,9 @@ Then follow [build/CUBIC.md](build/CUBIC.md): download the Xubuntu 24.04 ISO,
 open it in Cubic, and run `build/cubic-provision.sh` inside its chroot.
 
 *Advanced:* `build/build-livebuild.sh` builds from scratch (live-only, no
-installer) — for reproducible/public builds, see [docs/SPEC.md](docs/SPEC.md).
+installer) — headless and scriptable. See [build/LIVEBUILD.md](build/LIVEBUILD.md)
+for the full walkthrough (options + Ubuntu live-build gotchas), and
+[docs/SPEC.md](docs/SPEC.md) for where it fits.
 
 ## Daily use (once installed, only if Warden was enabled)
 ```bash
