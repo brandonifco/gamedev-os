@@ -14,7 +14,7 @@
 # Usage:
 #   ./build/build-livebuild.sh
 #
-# Output: .build/live-image-amd64.hybrid.iso
+# Output: .build/live-image-amd64.iso  (grub2 BIOS live ISO; non-hybrid — see LIVEBUILD.md)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -33,7 +33,9 @@ lb config \
   --mirror-bootstrap "$BASE_MIRROR" \
   --mirror-binary "$BASE_MIRROR" \
   --architectures "$ARCH" \
-  --debian-installer none \
+  --debian-installer false \
+  --bootloader grub2 \
+  --binary-images iso \
   --bootappend-live "boot=live components hostname=$DISTRO_ID"
 
 echo ">> stage build inputs into chroot (/opt/distro-build, /opt/gamedevos)"
@@ -50,9 +52,12 @@ mkdir -p config/includes.chroot/etc/skel/.config/autostart
 cp "$HERE/firstboot/gamedevos-firstboot.desktop" config/includes.chroot/etc/skel/.config/autostart/
 
 echo ">> install ordered chroot hooks"
-mkdir -p config/hooks/live
+# Ubuntu's live-build (3.0~aXX) only scans local hooks at config/hooks/*.chroot
+# (top level, non-recursive). The config/hooks/live/ subdirectory is a newer
+# Debian live-build convention this version does NOT scan — hooks there run never.
+mkdir -p config/hooks
 for h in "$HERE"/hooks/*.sh; do
-  dest="config/hooks/live/$(basename "$h" .sh).hook.chroot"
+  dest="config/hooks/$(basename "$h" .sh).chroot"
   cp "$h" "$dest"
   chmod +x "$dest"
 done
@@ -61,8 +66,8 @@ done
 # enabled in distro.conf; the base build never depends on it.
 if [ "${INCLUDE_WARDEN:-false}" = "true" ]; then
   echo ">> INCLUDE_WARDEN=true — injecting Warden component as hook 0800"
-  cp "$HERE/components/warden/install-warden.sh" config/hooks/live/0800-warden.hook.chroot
-  chmod +x config/hooks/live/0800-warden.hook.chroot
+  cp "$HERE/components/warden/install-warden.sh" config/hooks/0800-warden.chroot
+  chmod +x config/hooks/0800-warden.chroot
 else
   echo ">> Warden disabled (INCLUDE_WARDEN=false) — base build only"
 fi
@@ -72,6 +77,13 @@ mkdir -p config/package-lists
 # task-xfce-desktop pulls XFCE + LightDM. Add live tooling to reach a bootable live session.
 echo "task-xfce-desktop lightdm live-boot live-config systemd-sysv" \
   > config/package-lists/desktop.list.chroot
+
+# ISO-assembly tooling that must exist IN the chroot (LB_BUILD_WITH_CHROOT=true).
+# live-build's iso stage runs `isohybrid`, but on noble it lives in syslinux-utils,
+# NOT the `syslinux` package live-build tries to install — so without this the build
+# dies at the end with `isohybrid: not found`. genisoimage builds the ISO itself.
+echo "syslinux-utils genisoimage" \
+  > config/package-lists/isotools.list.chroot
 
 echo ">> build (this takes a while and needs network + sudo)"
 sudo lb build 2>&1 | tee build.log
