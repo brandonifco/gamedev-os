@@ -9,12 +9,14 @@
 # (see installer/) over this.
 #
 # Requirements (on an Ubuntu 24.04 build host):
-#   sudo apt install live-build debootstrap
+#   sudo apt install live-build debootstrap \
+#                    grub-pc-bin grub-efi-amd64-bin mtools xorriso
+#   (the grub-* / mtools / xorriso set is for the grub-mkrescue repackage at the end)
 #
 # Usage:
 #   ./build/build-livebuild.sh
 #
-# Output: .build/live-image-amd64.iso  (grub2 BIOS live ISO; non-hybrid — see LIVEBUILD.md)
+# Output: .build/live-image-amd64.iso  (BIOS + UEFI bootable, via grub-mkrescue — see LIVEBUILD.md)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -36,7 +38,10 @@ lb config \
   --debian-installer false \
   --bootloader grub2 \
   --binary-images iso \
-  --bootappend-live "boot=live components hostname=$DISTRO_ID"
+  `# boot=casper, NOT boot=live: the Xubuntu/casper base puts the squashfs in` \
+  `# /casper, and casper mounts it. live-boot (boot=live) looks in /live, finds` \
+  `# nothing, and drops to an initramfs shell ("Unable to find a medium...").` \
+  --bootappend-live "boot=casper components hostname=$DISTRO_ID"
 
 echo ">> stage build inputs into chroot (/opt/distro-build, /opt/gamedevos)"
 mkdir -p config/includes.chroot/opt/distro-build
@@ -87,6 +92,40 @@ echo "syslinux-utils genisoimage" \
 
 echo ">> build (this takes a while and needs network + sudo)"
 sudo lb build 2>&1 | tee build.log
+
+# --- Fix the ISO bootloader --------------------------------------------------
+# live-build's grub2 El Torito core (`grub-mkimage biosdisk iso9660`) does NOT
+# initialize under GRUB 2.12: the ISO hangs at "Booting from DVD/CD..." with no
+# menu, so nothing boots. Repackage the built ISO with grub-mkrescue, which emits
+# a proper BIOS + UEFI El Torito that boots reliably (and adds UEFI support).
+# Needs grub-pc-bin (BIOS i386-pc), grub-efi-amd64-bin (UEFI), mtools and xorriso
+# on the build host — without grub-pc-bin, grub-mkrescue silently makes a
+# UEFI-only image.
+BUILT="$(ls "$WORK"/*.iso 2>/dev/null | grep -v "/live-image-${ARCH}.iso$" | head -1)"
+FINAL="$WORK/live-image-${ARCH}.iso"
+if [ -n "$BUILT" ] && command -v grub-mkrescue >/dev/null; then
+  echo ">> repackaging ISO with grub-mkrescue (BIOS + UEFI bootable)"
+  if [ ! -d /usr/lib/grub/i386-pc ]; then
+    echo ">> WARN: grub-pc-bin missing — resulting ISO will be UEFI-only"
+  fi
+  ISOROOT="$WORK/isoroot"
+  sudo rm -rf "$ISOROOT"; mkdir -p "$ISOROOT"
+  sudo xorriso -osirrox on -indev "$BUILT" -extract / "$ISOROOT" >/dev/null 2>&1
+  sudo grub-mkrescue -o "$FINAL.new" "$ISOROOT" -- -volid "$DISTRO_ID" 2>&1 | tail -3
+  sudo rm -rf "$ISOROOT"
+  if [ -s "$FINAL.new" ]; then
+    sudo rm -f "$BUILT"
+    sudo mv "$FINAL.new" "$FINAL"
+    echo ">> bootable ISO ready: $FINAL"
+  else
+    echo ">> WARN: grub-mkrescue produced nothing; keeping original $BUILT"
+    sudo rm -f "$FINAL.new"
+  fi
+else
+  echo ">> WARN: grub-mkrescue not found — install grub-pc-bin grub-efi-amd64-bin;"
+  echo ">>       the raw live-build ISO does NOT boot under GRUB 2.12."
+fi
+# -----------------------------------------------------------------------------
 
 echo ">> DONE. ISO:"
 ls -lh "$WORK"/*.iso 2>/dev/null || echo "no ISO produced — check build.log"
