@@ -1,0 +1,11 @@
+# Minimal image for the adversarial containment probes.
+# Small, but with the handful of tools the probes need (capsh, mount, ps, curl,
+# dig). Built once by podman-harness.sh as localhost/gamedevos-advtest.
+FROM docker.io/library/alpine:3.20
+RUN apk add --no-cache \
+      libcap \
+      util-linux \
+      procps \
+      coreutils \
+      curl \
+      bind-tools
